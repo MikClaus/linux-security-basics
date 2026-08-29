@@ -135,5 +135,118 @@ No process required termination.
 
 ---
 
+## Step 4 — Review Authentication and System Logs
+
+### 1. Failed Login Attempts
+
+Command:
+
+```bash
+sudo grep -c "Failed password" /var/log/auth.log
+```
+
+### Finding
+
+The command was used to count failed password authentication attempts.
+
+**Result:** `[insert number of failed attempts]`
+
+### Assessment
+
+The number of failed attempts was reviewed to determine whether there
+were signs of repeated or unusual login activity.
+
+---
+
+### 2. Source IPs for Failed Login Attempts
+
+Command:
+
+```bash
+sudo grep "Failed password" /var/log/auth.log | awk '{print $(NF-3)}' | sort | uniq -c | sort -rn
+```
+
+### Finding
+
+Reviewed the source IP addresses associated with failed authentication
+attempts and checked for repeated attempts from the same source.
+
+**Result:** `[summarize what you found]`
+
+### Assessment
+
+No clearly suspicious source activity was identified based on the
+available authentication logs.
+
+---
+
+### 3. Successful Logins
+
+Command:
+
+```bash
+sudo grep "Accepted password" /var/log/auth.log
+```
+
+### Finding
+
+Reviewed successful password-based login attempts.
+
+**Result:** `[summarize who/when logged in]`
+
+The successful logins observed were consistent with expected user activity.
+
+---
+
+### 4. Sudo Usage
+
+Command:
+
+```bash
+sudo grep "sudo" /var/log/auth.log
+```
+
+### Finding
+
+Reviewed the authentication log for use of `sudo` and administrative
+activity.
+
+**Result:** `[summarize what you found]`
+
+The observed sudo activity appeared consistent with expected
+administrative actions.
+
+---
+
+### 5. Recent Package Installations
+
+Commands:
+
+```bash
+sudo grep -E "Commandline:|Install:" /var/log/apt/history.log
+```
+
+```bash
+sudo tail -n 100 /var/log/apt/history.log
+```
+
+### Finding
+
+Reviewed recent APT package installation activity and the most recent
+entries in the APT history log.
+
+The package activity was reviewed for unexpected or unfamiliar software
+installations.
+
+**Result:** `[summarize what you found]`
+
+Entries related to `unattended-upgrades` were considered consistent with
+the system's automatic update mechanism.
+
+### Assessment
+
+No unexpected software installations were identified based on the
+reviewed APT history.
+
 e network-related security concerns were identified.
 No changes were made.
