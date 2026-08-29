@@ -149,7 +149,7 @@ sudo grep -c "Failed password" /var/log/auth.log
 
 The command was used to count failed password authentication attempts.
 
-**Result:** `[insert number of failed attempts]`
+**Result:** `1`
 
 ### Assessment
 
