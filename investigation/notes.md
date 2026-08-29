@@ -40,29 +40,29 @@ the initial review.
 
 ### Assessment
 
-2. Groups
+### 2. Groups
 
 Reviewed the system groups and checked privileged groups, including
 sudo and docker.
 
-Finding
+### Finding
 mickey is a member of sudo.
 No unexpected privileged group memberships were identified.
-3. Currently Logged-in Users
+### 3. Currently Logged-in Users
 
 Checked the currently logged-in users.
 
-Finding
+### Finding
 
 Only my own user session was identified.
 
 No unexpected logged-in users were found.
 
-4. My Account
+### 4. My Account
 
 Checked my own account and group memberships.
 
-Finding
+### Finding
 
 Current account:
 
@@ -75,12 +75,12 @@ sudo
 
 The sudo membership is expected because this is my administrative account.
 
-5. Assessment
+### 5. Assessment
 
 No unusual user accounts, unexpected privileged group memberships, or
 unexpected logged-in users were identified.
 
-Conclusion
+### Conclusion
 
 No immediate security concerns were identified during this part of the
 investigation.
