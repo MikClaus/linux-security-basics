@@ -89,3 +89,34 @@ The presence of an interactive shell does not necessarily mean that an
 account belongs to a human user. Further investigation is required to
 determine whether each account is a regular user, administrative account,
 or service account.
+
+## Step 3 — Processes and Network Listeners
+
+### Commands Used
+
+#### Full process list
+
+```bash
+ps aux
+```
+
+Used to review all currently running processes.
+
+#### Processes running from `/tmp`
+
+```bash
+ps aux | grep /tmp
+```
+
+Used to identify processes whose command or executable path references `/tmp`.
+
+#### Network listeners
+
+```bash
+ss -tlnp
+```
+
+Used to identify TCP ports currently listening for network connections
+and the processes associated with them.
+
+  
