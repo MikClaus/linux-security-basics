@@ -40,6 +40,51 @@ the initial review.
 
 ### Assessment
 
+2. Groups
+
+Reviewed the system groups and checked privileged groups, including
+sudo and docker.
+
+Finding
+mickey is a member of sudo.
+No unexpected privileged group memberships were identified.
+3. Currently Logged-in Users
+
+Checked the currently logged-in users.
+
+Finding
+
+Only my own user session was identified.
+
+No unexpected logged-in users were found.
+
+4. My Account
+
+Checked my own account and group memberships.
+
+Finding
+
+Current account:
+
+mickey
+
+Group memberships include:
+
+mickey
+sudo
+
+The sudo membership is expected because this is my administrative account.
+
+5. Assessment
+
+No unusual user accounts, unexpected privileged group memberships, or
+unexpected logged-in users were identified.
+
+Conclusion
+
+No immediate security concerns were identified during this part of the
+investigation.
+
 The presence of an interactive shell does not necessarily mean that an
 account belongs to a human user. Further investigation is required to
 determine whether each account is a regular user, administrative account,
