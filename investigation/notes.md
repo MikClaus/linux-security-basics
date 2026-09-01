@@ -135,113 +135,81 @@ No process required termination.
 
 ---
 
+
 ## Step 4 — Review Authentication and System Logs
 
 ### 1. Failed Login Attempts
 
 Command:
 
-```bash
-sudo grep -c "Failed password" /var/log/auth.log
-```
+`sudo grep -c "Failed password" /var/log/auth.log`
 
 ### Finding
 
 The command was used to count failed password authentication attempts.
 
-**Result:** `1`
+**Result:** 7 failed login attempts were recorded.
 
 ### Assessment
 
-The number of failed attempts was reviewed to determine whether there
-were signs of repeated or unusual login activity.
+The 7 failed attempts were reviewed as part of the investigation to
+determine whether they indicated unusual or suspicious login activity.
 
 ---
 
-### 2. Source IPs for Failed Login Attempts
+### 2. Successful Logins
 
 Command:
 
-```bash
-sudo grep "Failed password" /var/log/auth.log | awk '{print $(NF-3)}' | sort | uniq -c | sort -rn
-```
-
-### Finding
-
-Reviewed the source IP addresses associated with failed authentication
-attempts and checked for repeated attempts from the same source.
-
-**Result:** `[summarize what you found]`
-
-### Assessment
-
-No clearly suspicious source activity was identified based on the
-available authentication logs.
-
----
-
-### 3. Successful Logins
-
-Command:
-
-```bash
-sudo grep "Accepted password" /var/log/auth.log
-```
+`sudo grep "Accepted password" /var/log/auth.log`
 
 ### Finding
 
 Reviewed successful password-based login attempts.
 
-**Result:** `[summarize who/when logged in]`
+**Result:** 4
 
-The successful logins observed were consistent with expected user activity.
+The successful logins observed were reviewed for consistency with
+expected user activity.
 
 ---
 
-### 4. Sudo Usage
+### 3. Sudo Usage
 
 Command:
 
-```bash
-sudo grep "sudo" /var/log/auth.log
-```
+`sudo grep "sudo" /var/log/auth.log`
 
 ### Finding
 
-Reviewed the authentication log for use of `sudo` and administrative
+Reviewed the authentication log for `sudo` usage and administrative
 activity.
 
-**Result:** `[summarize what you found]`
+**Result:** 59
 
-The observed sudo activity appeared consistent with expected
-administrative actions.
+The observed sudo activity was reviewed for unexpected administrative
+actions.
 
 ---
 
-### 5. Recent Package Installations
+### 4. Recent Package Installations
 
 Commands:
 
-```bash
-sudo grep -E "Commandline:|Install:" /var/log/apt/history.log
-```
+`sudo grep -E "Commandline:|Install:" /var/log/apt/history.log`
 
-```bash
-sudo tail -n 100 /var/log/apt/history.log
-```
+`sudo tail -n 100 /var/log/apt/history.log`
 
 ### Finding
 
-Reviewed recent APT package installation activity and the most recent
-entries in the APT history log.
+Reviewed recent APT package installation activity.
 
-The package activity was reviewed for unexpected or unfamiliar software
-installations.
+The package history was checked for unexpected or unfamiliar software.
 
-**Result:** `[summarize what you found]`
+Entries related to `unattended-upgrades` were identified and considered
+consistent with the system's automatic update mechanism.
 
-Entries related to `unattended-upgrades` were considered consistent with
-the system's automatic update mechanism.
+**Result:** total amount of installings is 259, most of them are safe and executed either by system as the updates or by user(Mickey)
 
 ### Assessment
 
