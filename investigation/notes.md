@@ -218,3 +218,186 @@ reviewed APT history.
 
 e network-related security concerns were identified.
 No changes were made.
+
+
+## Step 5 — Audit Permissions
+
+### Objective
+
+After reviewing the historical authentication activity, I inspected the current permissions of sensitive system files and directories. The goal was to identify permissions that could allow unauthorized users to modify or access sensitive resources.
+
+### 5.1 — Check permissions of `/etc/passwd` and `/etc/shadow`
+
+I checked the permissions of the two main local-account files:
+
+```bash
+ls -l /etc/passwd /etc/shadow
+```
+
+**Results:**
+
+```text
+-RW-R--R-- 1 root root  2828 Aug 11 03:13 /etc/passwd
+-RW-R-----1 root shadow 1332 Aug 11 03:13   /etc/shadow
+```
+
+**Expected permissions:**
+
+* `/etc/passwd` — normally readable by all users but writable only by `root`:
+  `-rw-r--r--`
+* `/etc/shadow` — normally accessible only by `root` (or the appropriate privileged group):
+  `-rw-------` or a system-specific equivalent.
+
+**Assessment:**
+
+/etc/passwd is accesible by root for writing and reading. users can only read, so do the others. 
+/etc/shadow is accesible by root for writing and reading. users can only read. No any acces for others. 
+
+---
+
+### 5.2 — Audit `/tmp`
+
+I first checked the permissions of the `/tmp` directory:
+
+```bash
+ls -ld /tmp
+```
+
+Then I listed its contents, including hidden files:
+
+```bash
+ls -la /tmp
+```
+
+**Results:**
+
+```text
+ls -ld /tmp
+
+drwxrwxrwt 15 root root 340 Sep 1 14:24 /tmp
+
+---
+
+$ ls -la /tmp
+
+drwxrwxrwt ... root root ... /tmp
+drwxr-xr-x ... root root ...
+drwxrwxrwt ... root root ... .ICE-unix
+-r--r--r--  ... mickey mickey ... .X0-lock
+-r--r--r--  ... mickey mickey ... .X1-lock
+drwxrwxrwt ... root root ... .X11-unix
+drwxrwxrwt ... root root ... XIM-unix
+drwxrwxrwt ... root root ... font-unix
+drwx------  ... root root ... snap-private-tmp
+drwx------  ... root root ... systemd-private-<ID>-ModemManager.service-<ID>
+drwx------  ... root root ... systemd-private-<ID>-chrony.service-<ID>
+...
+
+
+```
+
+The `/tmp` directory is expected to be writable by users because it is used for temporary files. Its typical permissions include the **sticky bit**, commonly displayed as:
+
+```text
+drwxrwxrwt
+```
+
+The sticky bit helps prevent users from deleting or renaming files belonging to other users.
+
+I reviewed the files currently present in `/tmp` and looked for anything unexpected, suspicious, or unrelated to normal system/application activity.
+
+**Assessment:**
+
+No unusual permissions found for unexpected files 
+
+---
+
+### 5.3 — Audit home directory permissions
+
+I checked the permissions of the directories under `/home`:
+
+```bash
+ls -ld /home/*
+```
+
+**Results:**
+
+```text
+drwxr-xr-x 3 root root 4096 Jul 6 21:57 /home/
+```
+
+I checked whether any user's home directory was excessively open to other users.
+
+In particular, permissions allowing unrestricted write access to a user's home directory would be considered a potential security issue.
+
+**Assessment:**
+
+usual 755, nothing unusual 
+
+---
+
+### 5.4 — Audit cron directories
+
+I inspected `/etc/cron.d`:
+
+```bash
+ls -la /etc/cron.d/
+```
+
+And `/var/spool/cron`:
+
+```bash
+ls -la /var/spool/cron/
+```
+
+**Results:**
+
+```text
+ls -la /etc/cron.d
+
+total 28
+drwxr-хг-х 2 root root 4096 Арг 23 03:24 .
+drwxr-хг-x 142 root root 12288 Aug 21 16:09 ..
+-rw-r--r-- 1 root root 102 Nov 5 2025 . placeholder
+-rw-r--r-- 1 root root 224 Oct 31 2025 anacron
+-rw-r--r-- 1 root root 188 Feb 13 2026 ezscrub_all
+
+ls -la /var/spool/cron
+
+total 12
+
+drwxr-хг-х 3 root root 4096 Арг 23 03:18
+drwxr-хг-х 6 root root 4096 Арг 23 03:22
+drwx-wx--T 2 root crontab 4096 Nov 5 2025 crontabs
+
+```
+
+I reviewed the permissions of the files and directories to determine whether any cron configuration was **world-writable**.
+
+World-writable cron files could represent a significant security risk because an unprivileged user might be able to modify scheduled commands that execute with elevated privileges.
+
+**Assessment:**
+
+No obvious permission issue identified. The /etc/cron.d directory contains standard system cron entries (placeholder, anacron, and e2scrub_all). The /var/spool/cron directory is owned by root:crontab and has the sticky bit enabled. No obvious world-writable cron files were identified from the available output.
+
+---
+
+### 5.5 — Findings
+
+Based on the permission audit:
+
+| Resource          | Expected security state           | Result       |
+| ----------------- | --------------------------------- | ------------ |
+| `/etc/passwd`     | Writable only by privileged users | [OK  ] |
+| `/etc/shadow`     | Restricted to privileged users    | [OK  ] |
+| `/tmp`            | Writable with sticky bit enabled  | [OK  ] |
+| `/home/*`         | Not excessively open              | [OK ] |
+| `/etc/cron.d`     | Cron files not world-writable     | [OK ] |
+| `/var/spool/cron` | Cron files not world-writable     | [OK ] |
+
+### Conclusion
+
+I audited the permissions of sensitive system files, temporary storage, user home directories, and cron configuration directories. Any permission that differed from the expected secure configuration was recorded as a potential security issue and investigated further.
+
+
+
