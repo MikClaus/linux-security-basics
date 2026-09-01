@@ -2,97 +2,118 @@
 
 ## Step 1 — Set Up Investigation Environment
 
-Created the investigation directory:
+First I created a directory for the investigation:
 
-~/investigation
+```bash
+mkdir ~/investigation
+```
 
-Created the notes file:
+Then I created the notes file:
 
-~/investigation/notes.txt
+```bash
+touch ~/investigation/notes.txt
+```
 
-Created VM snapshot:
+I also created a VM snapshot called:
 
+```text
 before-investigation
+```
 
 ### Reason
 
-Created a clean workspace and snapshot before starting the investigation.
+I wanted to have a separate place for the investigation files and also have a snapshot of the VM before making any changes.
 
-## Step 2 — Understand Who Is On This System
+---
 
-### 1. User Accounts
+# Step 2 — Understand Who Is On This System
 
-Reviewed the user accounts on the system and identified accounts with
-interactive login shells.
+## 1. User Accounts
+
+I checked the user accounts on the system and looked for accounts with an interactive login shell.
 
 Command used:
 
-`grep -v nologin /etc/passwd | grep -v false`
+```bash
+grep -v nologin /etc/passwd | grep -v false
+```
 
 ### Finding
 
-The command identified **49 accounts** with an interactive login shell.
+The command showed **49 accounts** with an interactive login shell.
 
-The accounts were reviewed to identify any unfamiliar or unexpected users.
+I looked through the accounts to see if there were any users that I did not recognize.
 
-No clearly suspicious or unrecognized accounts were identified during
-the initial review.
+I did not find any clearly suspicious or unknown accounts.
 
 ### Assessment
 
-### 2. Groups
+Having an interactive shell does not automatically mean that the account belongs to a real person. Some system or service accounts can also have shells, so this was taken into consideration.
 
-Reviewed the system groups and checked privileged groups, including
-sudo and docker.
+---
+
+## 2. Groups
+
+I checked the system groups and paid particular attention to privileged groups such as `sudo` and `docker`.
 
 ### Finding
-mickey is a member of sudo.
+
+My user `mickey` is a member of the `sudo` group.
+
 No unexpected privileged group memberships were identified.
-### 3. Currently Logged-in Users
 
-Checked the currently logged-in users.
+---
+
+## 3. Currently Logged-in Users
+
+I checked which users were currently logged into the system.
 
 ### Finding
 
-Only my own user session was identified.
+Only my own user session was present.
 
 No unexpected logged-in users were found.
 
-### 4. My Account
+---
 
-Checked my own account and group memberships.
+## 4. My Account
+
+I checked my own account and its group memberships.
 
 ### Finding
 
 Current account:
 
+```text
 mickey
+```
 
-Group memberships include:
+Groups included:
 
+```text
 mickey
 sudo
+```
 
-The sudo membership is expected because this is my administrative account.
+The `sudo` membership is expected because this is my administrative account.
 
-### 5. Assessment
+---
 
-No unusual user accounts, unexpected privileged group memberships, or
-unexpected logged-in users were identified.
+## 5. Assessment
+
+No unusual user accounts, unexpected privileged group memberships, or unexpected logged-in users were identified.
 
 ### Conclusion
 
-No immediate security concerns were identified during this part of the
-investigation.
+No immediate security concerns were identified during this part of the investigation.
 
-The presence of an interactive shell does not necessarily mean that an
-account belongs to a human user. Further investigation is required to
-determine whether each account is a regular user, administrative account,
-or service account.
+The presence of an interactive shell does not necessarily mean that an account belongs to a human user. Further investigation would be needed to determine the purpose of every account.
 
-## Step 3 — Processes and Network Listeners
+---
 
-### 1. Full Process List
+# Step 3 — Processes and Network Listeners
+
+## 1. Full Process List
 
 Command:
 
@@ -102,16 +123,15 @@ ps aux
 
 ### Finding
 
-Reviewed the list of currently running processes.
+I reviewed the list of currently running processes.
 
-The processes observed appear to be associated with normal system services,
-desktop applications, and user processes.
+The processes I saw appeared to be related to normal system services, desktop applications and user processes.
 
-No clearly suspicious processes were identified during the initial review.
+I did not identify any clearly suspicious processes during the initial review.
 
 ---
 
-### 2. Processes Running from `/tmp`
+## 2. Processes Running from `/tmp`
 
 Command:
 
@@ -121,354 +141,362 @@ ps aux | grep /tmp
 
 ### Finding
 
-Checked for running processes whose command or executable path references
-`/tmp`.
+I checked for processes where `/tmp` appeared in the command or executable path.
 
 No suspicious processes running from `/tmp` were identified.
 
-The `grep /tmp` entry itself was generated by the search command and was
-not considered a separate process of concern.
+The `grep /tmp` process itself appeared in the results because it was the command I had just executed. I did not consider this suspicious.
 
 ### Assessment
 
-No process required termination.
+No process needed to be terminated.
 
 ---
 
+# Step 4 — Review Authentication and System Logs
 
-## Step 4 — Review Authentication and System Logs
-
-### 1. Failed Login Attempts
+## 1. Failed Login Attempts
 
 Command:
 
-`sudo grep -c "Failed password" /var/log/auth.log`
+```bash
+sudo grep -c "Failed password" /var/log/auth.log
+```
 
 ### Finding
 
-The command was used to count failed password authentication attempts.
+The command counted failed password authentication attempts.
 
-**Result:** 7 failed login attempts were recorded.
+**Result:** 7 failed login attempts.
+
+I reviewed these attempts as part of the investigation to see if they indicated unusual login activity.
 
 ### Assessment
 
-The 7 failed attempts were reviewed as part of the investigation to
-determine whether they indicated unusual or suspicious login activity.
+The number of failed attempts was small and I did not find evidence from the investigation that they represented an unauthorized login.
 
 ---
 
-### 2. Successful Logins
+## 2. Successful Logins
 
 Command:
 
-`sudo grep "Accepted password" /var/log/auth.log`
+```bash
+sudo grep "Accepted password" /var/log/auth.log
+```
 
 ### Finding
 
-Reviewed successful password-based login attempts.
+I reviewed successful password-based login attempts.
 
-**Result:** 4
+**Result:** 4 successful logins.
 
-The successful logins observed were reviewed for consistency with
-expected user activity.
+The successful logins were checked against the expected activity on the machine.
 
 ---
 
-### 3. Sudo Usage
+## 3. Sudo Usage
 
 Command:
 
-`sudo grep "sudo" /var/log/auth.log`
+```bash
+sudo grep "sudo" /var/log/auth.log
+```
 
 ### Finding
 
-Reviewed the authentication log for `sudo` usage and administrative
-activity.
+I reviewed the authentication log for `sudo` usage.
 
-**Result:** 59
+**Result:** 59 matching entries.
 
-The observed sudo activity was reviewed for unexpected administrative
-actions.
+The sudo activity was reviewed for unexpected administrative actions.
+
+I did not identify any suspicious sudo activity.
 
 ---
 
-### 4. Recent Package Installations
+## 4. Recent Package Installations
 
-Commands:
+Commands used:
 
-`sudo grep -E "Commandline:|Install:" /var/log/apt/history.log`
+```bash
+sudo grep -E "Commandline:|Install:" /var/log/apt/history.log
+```
 
-`sudo tail -n 100 /var/log/apt/history.log`
+and:
+
+```bash
+sudo tail -n 100 /var/log/apt/history.log
+```
 
 ### Finding
 
-Reviewed recent APT package installation activity.
+I reviewed the recent APT package installation history.
 
-The package history was checked for unexpected or unfamiliar software.
+The history contained entries related to `unattended-upgrades`, which appears to be the normal automatic update mechanism.
 
-Entries related to `unattended-upgrades` were identified and considered
-consistent with the system's automatic update mechanism.
-
-**Result:** total amount of installings is 259, most of them are safe and executed either by system as the updates or by user(Mickey)
+**Result:** There were 259 installation-related entries in the reviewed package history. Most appeared to be normal system updates or software installed by me (`mickey`).
 
 ### Assessment
 
-No unexpected software installations were identified based on the
-reviewed APT history.
+I did not identify any unexpected software installations based on the package history that I reviewed.
 
-e network-related security concerns were identified.
 No changes were made.
 
+---
 
-## Step 5 — Audit Permissions
+# Step 5 — Audit Permissions
 
-### Objective
+## Objective
 
-After reviewing the historical authentication activity, I inspected the current permissions of sensitive system files and directories. The goal was to identify permissions that could allow unauthorized users to modify or access sensitive resources.
+After looking at the historical activity, I checked the current permissions of some important system files and directories.
 
-### 5.1 — Check permissions of `/etc/passwd` and `/etc/shadow`
+The main goal was to see if any files could be modified by users who should not have permission to modify them.
 
-I checked the permissions of the two main local-account files:
+---
+
+## 5.1 — `/etc/passwd` and `/etc/shadow`
+
+Command:
 
 ```bash
 ls -l /etc/passwd /etc/shadow
 ```
 
-**Results:**
+### Results
 
 ```text
--RW-R--R-- 1 root root  2828 Aug 11 03:13 /etc/passwd
--RW-R-----1 root shadow 1332 Aug 11 03:13   /etc/shadow
+-rw-r--r-- 1 root root   2828 Aug 11 03:13 /etc/passwd
+-rw-r----- 1 root shadow 1332 Aug 11 03:13 /etc/shadow
 ```
 
-**Expected permissions:**
+### Expected permissions
 
-* `/etc/passwd` — normally readable by all users but writable only by `root`:
-  `-rw-r--r--`
-* `/etc/shadow` — normally accessible only by `root` (or the appropriate privileged group):
-  `-rw-------` or a system-specific equivalent.
+For `/etc/passwd`, it is normal for all users to be able to read the file, while only root can write to it.
 
-**Assessment:**
+Expected:
 
-/etc/passwd is accesible by root for writing and reading. users can only read, so do the others. 
-/etc/shadow is accesible by root for writing and reading. users can only read. No any acces for others. 
+```text
+-rw-r--r--
+```
+
+For `/etc/shadow`, access should be much more restricted. The exact group permissions can depend on the Linux distribution.
+
+### Assessment
+
+`/etc/passwd` is owned by `root:root`. Root has read and write access and other users have read access only.
+
+`/etc/shadow` is owned by `root:shadow`. Root has read and write access. Members of the `shadow` group have read access, while other users have no access.
+
+The permissions were considered appropriate for this system.
 
 ---
 
-### 5.2 — Audit `/tmp`
+## 5.2 — Audit `/tmp`
 
-I first checked the permissions of the `/tmp` directory:
+First I checked the permissions of `/tmp`:
 
 ```bash
 ls -ld /tmp
 ```
 
-Then I listed its contents, including hidden files:
+Result:
+
+```text
+drwxrwxrwt 15 root root 340 Sep 1 14:24 /tmp
+```
+
+I then checked the contents, including hidden files:
 
 ```bash
 ls -la /tmp
 ```
 
-**Results:**
+### Assessment
 
-```text
-ls -ld /tmp
-
-drwxrwxrwt 15 root root 340 Sep 1 14:24 /tmp
-
----
-
-$ ls -la /tmp
-
-drwxrwxrwt ... root root ... /tmp
-drwxr-xr-x ... root root ...
-drwxrwxrwt ... root root ... .ICE-unix
--r--r--r--  ... mickey mickey ... .X0-lock
--r--r--r--  ... mickey mickey ... .X1-lock
-drwxrwxrwt ... root root ... .X11-unix
-drwxrwxrwt ... root root ... XIM-unix
-drwxrwxrwt ... root root ... font-unix
-drwx------  ... root root ... snap-private-tmp
-drwx------  ... root root ... systemd-private-<ID>-ModemManager.service-<ID>
-drwx------  ... root root ... systemd-private-<ID>-chrony.service-<ID>
-...
-
-
-```
-
-The `/tmp` directory is expected to be writable by users because it is used for temporary files. Its typical permissions include the **sticky bit**, commonly displayed as:
+The permissions of `/tmp` are:
 
 ```text
 drwxrwxrwt
 ```
 
-The sticky bit helps prevent users from deleting or renaming files belonging to other users.
+The `t` at the end means that the sticky bit is enabled.
 
-I reviewed the files currently present in `/tmp` and looked for anything unexpected, suspicious, or unrelated to normal system/application activity.
+This is expected for `/tmp` because multiple users and system services can use this directory. The sticky bit helps prevent users from deleting or renaming files belonging to other users.
 
-**Assessment:**
+The files and directories I saw in `/tmp` appeared to be related to normal desktop and system services, including X11, Snap and systemd.
 
-No unusual permissions found for unexpected files 
+I did not identify any clearly suspicious files.
 
 ---
 
-### 5.3 — Audit home directory permissions
+## 5.3 — Audit Home Directory Permissions
 
-I checked the permissions of the directories under `/home`:
+I checked the home directory:
 
 ```bash
 ls -ld /home/*
 ```
 
-**Results:**
+The directory itself showed permissions consistent with:
 
 ```text
-drwxr-xr-x 3 root root 4096 Jul 6 21:57 /home/
+drwxr-xr-x
 ```
 
-I checked whether any user's home directory was excessively open to other users.
+The `/home` directory was owned by `root:root`.
 
-In particular, permissions allowing unrestricted write access to a user's home directory would be considered a potential security issue.
+### Assessment
 
-**Assessment:**
+The permissions were not world-writable and did not appear to be excessively open.
 
-usual 755, nothing unusual 
+No obvious permission problem was identified.
 
 ---
 
-### 5.4 — Audit cron directories
+## 5.4 — Audit Cron Directories
 
-I inspected `/etc/cron.d`:
+I checked `/etc/cron.d`:
 
 ```bash
 ls -la /etc/cron.d/
 ```
 
-And `/var/spool/cron`:
+I also checked:
 
 ```bash
 ls -la /var/spool/cron/
 ```
 
-**Results:**
+### Results
+
+The `/etc/cron.d` directory contained entries including:
 
 ```text
-ls -la /etc/cron.d
-
-total 28
-drwxr-хг-х 2 root root 4096 Арг 23 03:24 .
-drwxr-хг-x 142 root root 12288 Aug 21 16:09 ..
--rw-r--r-- 1 root root 102 Nov 5 2025 . placeholder
--rw-r--r-- 1 root root 224 Oct 31 2025 anacron
--rw-r--r-- 1 root root 188 Feb 13 2026 ezscrub_all
-
-ls -la /var/spool/cron
-
-total 12
-
-drwxr-хг-х 3 root root 4096 Арг 23 03:18
-drwxr-хг-х 6 root root 4096 Арг 23 03:22
-drwx-wx--T 2 root crontab 4096 Nov 5 2025 crontabs
-
+placeholder
+anacron
+e2scrub_all
 ```
 
-I reviewed the permissions of the files and directories to determine whether any cron configuration was **world-writable**.
+These appeared to be normal system cron files.
 
-World-writable cron files could represent a significant security risk because an unprivileged user might be able to modify scheduled commands that execute with elevated privileges.
+The `/var/spool/cron` directory contained the `crontabs` directory and was owned by `root:crontab`.
 
-**Assessment:**
+The directory had the sticky bit enabled.
 
-No obvious permission issue identified. The /etc/cron.d directory contains standard system cron entries (placeholder, anacron, and e2scrub_all). The /var/spool/cron directory is owned by root:crontab and has the sticky bit enabled. No obvious world-writable cron files were identified from the available output.
+### Assessment
+
+I checked the permissions to see if any cron files were world-writable.
+
+I did not identify an obvious world-writable cron file.
+
+No permission problem was identified that required fixing.
 
 ---
 
-### 5.5 — Findings
+## 5.5 — Findings Summary
 
-Based on the permission audit:
-
-| Resource          | Expected security state           | Result       |
-| ----------------- | --------------------------------- | ------------ |
-| `/etc/passwd`     | Writable only by privileged users | [OK  ] |
-| `/etc/shadow`     | Restricted to privileged users    | [OK  ] |
-| `/tmp`            | Writable with sticky bit enabled  | [OK  ] |
-| `/home/*`         | Not excessively open              | [OK ] |
-| `/etc/cron.d`     | Cron files not world-writable     | [OK ] |
-| `/var/spool/cron` | Cron files not world-writable     | [OK ] |
+| Resource          | Expected security state           | Result |
+| ----------------- | --------------------------------- | ------ |
+| `/etc/passwd`     | Writable only by privileged users | OK     |
+| `/etc/shadow`     | Restricted to privileged users    | OK     |
+| `/tmp`            | Writable with sticky bit enabled  | OK     |
+| `/home/*`         | Not excessively open              | OK     |
+| `/etc/cron.d`     | Cron files not world-writable     | OK     |
+| `/var/spool/cron` | Cron files not world-writable     | OK     |
 
 ### Conclusion
 
-I audited the permissions of sensitive system files, temporary storage, user home directories, and cron configuration directories. Any permission that differed from the expected secure configuration was recorded as a potential security issue and investigated further.
+I checked permissions on sensitive system files, `/tmp`, home directories and cron directories.
 
+I did not find a permission problem that needed to be fixed.
 
-## Step 6 — Clean Up and Harden
+---
 
-### Objective
+# Step 6 — Clean Up and Harden
 
-Based on the findings from the previous audit steps, I reviewed the system for issues requiring remediation. Any corrective action would have been documented before being performed.
+## Objective
 
-### 6.1 — Suspicious processes
+After completing the investigation, I checked whether any of the findings required changes to the system.
 
-No suspicious processes running from `/tmp` were identified during the audit.
+I did not want to change or delete anything unless there was a reason to do so.
+
+## 6.1 — Suspicious Processes
+
+No suspicious processes running from `/tmp` were identified.
 
 **Action:** No processes were terminated.
 
-**Reason:** There was no evidence of a malicious or unexpected process that required termination.
+**Reason:** There was no suspicious process that required termination.
 
 ---
 
-### 6.2 — Unexpected files in `/tmp`
+## 6.2 — Unexpected Files in `/tmp`
 
-The contents of `/tmp` were reviewed. The files and directories observed appeared to be related to normal system and desktop services.
+I reviewed the contents of `/tmp`.
+
+The files and directories appeared to be related to normal system and desktop services.
 
 **Action:** No files were removed.
 
-**Reason:** No clearly suspicious or unnecessary files were identified, so removing them could have disrupted legitimate system services.
+**Reason:** I did not find any clearly suspicious files, so removing them could potentially affect normal system operation.
 
 ---
 
-### 6.3 — Permission problems
+## 6.3 — Permission Problems
 
-Permissions on sensitive files and directories were reviewed, including:
+I reviewed permissions on:
 
-* `/etc/passwd`
-* `/etc/shadow`
-* `/tmp`
-* `/home`
-* `/etc/cron.d`
-* `/var/spool/cron`
+```text
+/etc/passwd
+/etc/shadow
+/tmp
+/home
+/etc/cron.d
+/var/spool/cron
+```
 
-No permission issue requiring corrective action was identified.
+No permission problem requiring correction was identified.
 
-**Action:** No `chmod` or `chown` commands were required.
+**Action:** No `chmod` or `chown` commands were used.
 
-**Reason:** The permissions observed were consistent with the expected secure configuration.
+**Reason:** The permissions were considered appropriate for the system.
 
 ---
 
-### 6.4 — Unexpected software
+## 6.4 — Unexpected Software
 
-No unexpected or unauthorized software installation was identified during the audit.
+The APT history was reviewed for unexpected software.
+
+No clearly unauthorized or unexpected software was identified.
 
 **Action:** No packages were removed.
 
-**Reason:** There was no evidence that an installed package required removal.
+**Reason:** There was no evidence that a package needed to be removed.
 
 ---
 
-### 6.5 — Sudo access
+## 6.5 — Sudo Access
 
-No unauthorized account requiring removal from the `sudo` group was identified.
+I checked the sudo membership of the users identified during the investigation.
 
-**Action:** No accounts were removed from the `sudo` group.
+My account, `mickey`, is a member of the `sudo` group, which is expected because it is my administrative account.
 
-**Reason:** No evidence was found that an unauthorized user had administrative privileges.
+No unauthorized sudo account was identified.
+
+**Action:** No users were removed from the `sudo` group.
+
+**Reason:** No unauthorized sudo access was found.
 
 ---
 
-### Conclusion
+## Conclusion
 
-No remediation actions were required after completing the audit.
+No cleanup actions were required after the investigation.
 
-The system did not present any findings that justified terminating processes, deleting files, changing permissions, removing software, or modifying sudo group membership. Therefore, no potentially disruptive changes were made to the system.
+I did not find evidence that required me to kill a process, delete a file, change permissions, remove software or remove a user from the `sudo` group.
 
-This demonstrates a **findings-driven remediation approach**: corrective actions were considered based on evidence rather than performed unnecessarily.
+Because there was no clear reason to make these changes, I left the system unchanged.
+
+Overall, the investigation did not identify any immediate security issue requiring remediation.
+
