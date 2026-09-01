@@ -400,4 +400,75 @@ Based on the permission audit:
 I audited the permissions of sensitive system files, temporary storage, user home directories, and cron configuration directories. Any permission that differed from the expected secure configuration was recorded as a potential security issue and investigated further.
 
 
+## Step 6 — Clean Up and Harden
 
+### Objective
+
+Based on the findings from the previous audit steps, I reviewed the system for issues requiring remediation. Any corrective action would have been documented before being performed.
+
+### 6.1 — Suspicious processes
+
+No suspicious processes running from `/tmp` were identified during the audit.
+
+**Action:** No processes were terminated.
+
+**Reason:** There was no evidence of a malicious or unexpected process that required termination.
+
+---
+
+### 6.2 — Unexpected files in `/tmp`
+
+The contents of `/tmp` were reviewed. The files and directories observed appeared to be related to normal system and desktop services.
+
+**Action:** No files were removed.
+
+**Reason:** No clearly suspicious or unnecessary files were identified, so removing them could have disrupted legitimate system services.
+
+---
+
+### 6.3 — Permission problems
+
+Permissions on sensitive files and directories were reviewed, including:
+
+* `/etc/passwd`
+* `/etc/shadow`
+* `/tmp`
+* `/home`
+* `/etc/cron.d`
+* `/var/spool/cron`
+
+No permission issue requiring corrective action was identified.
+
+**Action:** No `chmod` or `chown` commands were required.
+
+**Reason:** The permissions observed were consistent with the expected secure configuration.
+
+---
+
+### 6.4 — Unexpected software
+
+No unexpected or unauthorized software installation was identified during the audit.
+
+**Action:** No packages were removed.
+
+**Reason:** There was no evidence that an installed package required removal.
+
+---
+
+### 6.5 — Sudo access
+
+No unauthorized account requiring removal from the `sudo` group was identified.
+
+**Action:** No accounts were removed from the `sudo` group.
+
+**Reason:** No evidence was found that an unauthorized user had administrative privileges.
+
+---
+
+### Conclusion
+
+No remediation actions were required after completing the audit.
+
+The system did not present any findings that justified terminating processes, deleting files, changing permissions, removing software, or modifying sudo group membership. Therefore, no potentially disruptive changes were made to the system.
+
+This demonstrates a **findings-driven remediation approach**: corrective actions were considered based on evidence rather than performed unnecessarily.
