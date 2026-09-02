@@ -500,3 +500,4 @@ Because there was no clear reason to make these changes, I left the system uncha
 
 Overall, the investigation did not identify any immediate security issue requiring remediation.
 
+## Note: I attached screenshots of the terminal and some of the commands used during the investigation. Not all commands are shown in the screenshots. Some commands were also modified or shortened for the public version in order to avoid revealing private information such as IP addresses and usernames. No passwords, credentials, or other sensitive information are included in the repository.
